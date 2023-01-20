@@ -1,0 +1,10 @@
+const mongoose = require("mongoose");
+const CustomerSchema = mongoose.Schema(
+  {
+    number:String
+  }
+);
+
+const CustomerModel = new mongoose.model("customers", CustomerSchema);
+
+module.exports = CustomerModel;

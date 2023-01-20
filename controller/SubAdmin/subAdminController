@@ -1,39 +1,78 @@
-const passport = require("passport");
 const subAdminModel = require("../../models/admin/subAdminModel");
-// --------------------------------------------------------------------------------------
-// Login SubAdmin //
-// route => localhost:3001/subAdmin/login
-async function subAdminLogin(req, res) {
-  const SubAdminUser = new subAdminModel({
-    username: req.body.username,
-    password: req.body.password,
-  });
+const bcrypt = require("bcrypt");
+const CustomerModel=require("../../models/CustomerModel");
+const MessagesModel=require("../../models/MessagesModel");
 
-  req.login(SubAdminUser, function (err) {
+// Login SubAdmin
+async function subAdminLogin(req, res) {
+  username = req.body.username;
+  password = req.body.password;
+
+  subAdminModel.findOne({ username: username }, (err, user) => {
     if (err) {
-      console.log(err);
+      res.send(err);
     } else {
-      passport.authenticate("superAdmin")(req, res, function () {
-        res.send("sub admin login successfully");
-      });
-      
+      if (user) {
+        console.log(user);
+        match = bcrypt.compareSync(password, user.password);
+        console.log(match);
+        if (match == true) {
+          req.session.user = user;
+          // console.log(req.user);
+          res.send("Sub Admin Login Successfully");
+        } else {
+          res.send("Incorrect password");
+        }
+      } else {
+        res.send("user not found");
+      }
     }
   });
 }
 module.exports.subAdminLogin = subAdminLogin;
 
-async function subAdminLogout(req, res, next) {
-  req.logout(function (err) {
-    if (err) {
-      return next(err);
-    }
-    res.send("Logout successfully");
-  });
-  console.log(req.user);
-}
-module.exports.subAdminLogout = subAdminLogout;
-
 async function home(req, res) {
   res.send("home route of Sub Admin");
 }
 module.exports.home = home;
+
+async function logout(req, res, next) {
+ res.clearCookie("user_id");
+ res.send("user is logout");
+}
+module.exports.logout = logout;
+
+async function addCustomer(req,res) {
+  const number=req.body.number;
+  const docs=new CustomerModel({
+    number:number
+  });
+  docs.save((err,user)=>{
+    if(err){
+      res.send(err);
+    }else{
+      res.send(user);
+      console.log("Customer saved successfully");
+    }
+  })
+}
+module.exports.addCustomer=addCustomer;
+
+async function sendMsg(req,res) {
+  const docs=new MessagesModel({
+    to_id:req.params.customerId,
+    msgBody:req.body.msgBody
+  });
+  docs.save((err,msg)=>{
+    if(err){
+      res.send(err);
+    }else{
+      if(msg){
+        res.send(msg + " msg is sent ");
+      }else{
+        res.send("msg is not send")
+      }
+    }
+  })
+}
+module.exports.sendMsg=sendMsg;

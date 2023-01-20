@@ -123,7 +123,7 @@ async function addSubAdmin(req, res) {
   const newUser = new subAdminModel({
     name: req.body.name,
     description: req.body.description,
-    phone_No: req.body.phone_No,
+    username: req.body.username,
     personal_Token: req.body.personal_Token,
     password:hash
   });
@@ -133,7 +133,8 @@ async function addSubAdmin(req, res) {
       res.send(err)
     }else{
       console.log(user+" is saved successfully");
-      res.send(user)
+      req.session.user=user;
+      res.send(user);
     }
   });
 }
@@ -151,3 +152,49 @@ async function readSubAdmins(req, res) {
   });
 }
 module.exports.readSubAdmins = readSubAdmins;
+
+
+async function deleteSubAdmin(req, res) {
+  const subAdminId = req.params.subAdminId;
+  console.log(subAdminId);
+  subAdminModel.findOneAndDelete({ _id: subAdminId }, (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send("sub Admin successfully deleted");
+    }
+  });
+}
+module.exports.deleteSubAdmin = deleteSubAdmin;
+
+async function editSubAdmin(req, res) {
+  const subAdminId = req.params.subAdminId;
+  console.log(subAdminId);
+  subAdminModel.findOneAndUpdate(
+    { _id: subAdminId },
+    { $set: {  name: req.body.name,
+      description: req.body.description,
+      phone_No:req.body.phone_No,
+      personal_Token: req.body.personal_Token} },
+    (err, found) => {
+      if (err) {
+        console.log(err);
+      } else {
+        if (found) {
+          res.send(found);
+        } else {
+          res.send("not found");
+        }
+      }
+    }
+  );
+}
+module.exports.editSubAdmin = editSubAdmin;
+
+async function adminLogout(req,res) {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.send("Super Admin is Logout");
+  });
+}
+module.exports.adminLogout=adminLogout;

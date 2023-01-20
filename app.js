@@ -2,6 +2,7 @@ require("dotenv").config();
 const bcrypt = require('bcrypt');
 const express = require("express");
 const session = require("express-session");
+const cookieParser=require("cookie-parser");
 const app = express();
 // const myToken=process.env.MY_TOKEN;
 // const token=process.env.TOKEN;
@@ -15,8 +16,10 @@ app.set("view engine", "ejs");
 const path = require("path");
 app.set("views", path.join(__dirname, "/views"));
 
+app.use(cookieParser());
 app.use(
   session({
+    key:"user_id",
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: false,

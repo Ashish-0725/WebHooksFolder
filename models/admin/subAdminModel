@@ -4,9 +4,9 @@ const subAdminSchema = mongoose.Schema(
   {
     name: String,
     description: String,
-    phone_No:Number,
+    username:String, // It should be business phone number of the organization or sub admin
     personal_Token: String,
-    password: String,
+    password: String
   },
   {
     timestamps: {
