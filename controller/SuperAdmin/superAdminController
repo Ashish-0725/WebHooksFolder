@@ -1,0 +1,153 @@
+const passport = require("passport");
+const AdminModel = require("../../models/admin/adminModel");
+const subAdminModel = require("../../models/admin/subAdminModel");
+const bcrypt=require("bcrypt");
+// ----------------------------------------------------------------------------------------------
+//-------Admin Login--------//
+// route => localhost:3001/admin/login
+
+async function login(req, res) {
+  const user = new AdminModel({
+    username: req.body.username,
+    password: req.body.password,
+  });
+  req.login(user, function (err) {
+    if (err) {
+      return res.send(err);
+    }
+    return passport.authenticate("local")(req, res, function () {
+      console.log("Login Success");
+      res.send(req.user);
+    });
+  });
+  console.log(req.user);
+}
+module.exports.login = login;
+
+async function home(req, res) {
+  res.send("dashboard/home of sub admin");
+}
+module.exports.home = home;
+
+async function addNewAdmin(req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
+
+  AdminModel.register(
+    {
+      username: req.body.username,
+    },
+    req.body.password,
+    function (err, user) {
+      if (err) {
+        console.log(err);
+      } else {
+        passport.authenticate("local")(req, res, function () {
+          console.log(user);
+          res.send("Admin Added successfully using passport");
+        });
+      }
+    }
+  );
+}
+module.exports.addNewAdmin = addNewAdmin;
+
+async function getSupAdmins(req, res) {
+  AdminModel.find({}, (err, found) => {
+    if (err) return err;
+    else {
+      if (found) {
+        res.send(found);
+      }
+    }
+  });
+}
+module.exports.getSupAdmins = getSupAdmins;
+
+async function readSuperAdmin(req, res) {
+  AdminModel.findOne({ _id: req.params.supAdminId }, (err, found) => {
+    if (err) {
+      console.log(err);
+    } else {
+      if (found) {
+        res.send(found);
+      } else {
+        res.send("not found");
+      }
+    }
+  });
+}
+module.exports.readSuperAdmin = readSuperAdmin;
+
+//problem- updated docs displayed after refresh
+async function editSuperAdmin(req, res) {
+  const AdminId = req.params.supAdminId;
+  console.log(AdminId);
+  AdminModel.findOneAndUpdate(
+    { _id: AdminId },
+    { $set: { username: req.body.username } },
+    (err, found) => {
+      if (err) {
+        console.log(err);
+      } else {
+        if (found) {
+          res.send(found);
+        } else {
+          res.send("not found");
+        }
+      }
+    }
+  );
+}
+module.exports.editSuperAdmin = editSuperAdmin;
+
+async function deleteSuperAdmin(req, res) {
+  const AdminId = req.params.supAdminId;
+  console.log(AdminId);
+  AdminModel.findOneAndDelete({ _id: AdminId }, (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      res.send("successfully deleted");
+    }
+  });
+}
+module.exports.deleteSuperAdmin = deleteSuperAdmin;
+
+//-----Adding Sub-Admin Users-----//
+// route => localhost:3001/admin/home/:supAdminId/addSubAdmin
+async function addSubAdmin(req, res) {
+  console.log("Super Admin - "+req.user+"added the sub admin");
+  const hash = bcrypt.hashSync(req.body.password, 10);
+  console.log(hash);
+  const newUser = new subAdminModel({
+    name: req.body.name,
+    description: req.body.description,
+    phone_No: req.body.phone_No,
+    personal_Token: req.body.personal_Token,
+    password:hash
+  });
+  newUser.save((err,user)=>{
+    if(err){
+      console.log(err);
+      res.send(err)
+    }else{
+      console.log(user+" is saved successfully");
+      res.send(user)
+    }
+  });
+}
+module.exports.addSubAdmin = addSubAdmin;
+
+
+async function readSubAdmins(req, res) {
+  subAdminModel.find({}, (err, found) => {
+    if (err) return err;
+    else {
+      if (found) {
+        res.send(found);
+      }
+    }
+  });
+}
+module.exports.readSubAdmins = readSubAdmins;

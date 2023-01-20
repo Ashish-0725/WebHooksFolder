@@ -1,0 +1,21 @@
+const mongoose = require("mongoose");
+
+const subAdminSchema = mongoose.Schema(
+  {
+    name: String,
+    description: String,
+    phone_No:Number,
+    personal_Token: String,
+    password: String,
+  },
+  {
+    timestamps: {
+      createdAt: "created_at", // time of sub admin creation
+      updatedAt: "updated_at", // time of sub admin updated last time
+    },
+  }
+);
+
+const subAdminModel = new mongoose.model("subAdmin", subAdminSchema);
+
+module.exports = subAdminModel;
